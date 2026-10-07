@@ -36,3 +36,8 @@ jobs:
         with:
           name: MSL-Trading-Journal
           path: app/build/outputs/apk/debug/app-debug.apk
+          - name: Upload APK
+  uses: actions/upload-artifact@v5
+  with:
+    name: MSL-Trading-Journal
+    path: app/build/outputs/apk/debug/app-debug.apk
