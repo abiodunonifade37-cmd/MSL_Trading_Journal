@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>MSL Journal V6</title>
+<style>
+:root{--bg:#0b0f14;--card:#131922;--card2:#19212c;--line:#273241;--text:#edf2f7;--muted:#8996a6;--accent:#67a9ff;--good:#57d69a;--bad:#ff6f7d;--warn:#ffc857}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px system-ui,-apple-system,Segoe UI,sans-serif;padding-bottom:78px}
+header{position:sticky;top:0;z-index:5;background:#0b0f14ee;backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:14px 16px}
+h1,h2,h3{margin:0 0 10px}h1{font-size:20px}h2{font-size:17px}.sub{color:var(--muted);font-size:12px}
+main{padding:14px;max-width:760px;margin:auto}.screen{display:none}.screen.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px;margin-bottom:11px}
+.metric b{display:block;font-size:22px}.metric span{color:var(--muted);font-size:11px}
+label{display:block;color:var(--muted);font-size:11px;margin:10px 0 5px}input,select,textarea{width:100%;background:#0d131b;border:1px solid var(--line);border-radius:9px;color:var(--text);padding:11px;font:inherit}textarea{min-height:76px;resize:vertical}
+button{border:0;border-radius:10px;padding:11px 13px;background:var(--card2);color:var(--text);font-weight:650}button.primary{background:var(--accent);color:#07101b}button.good{background:var(--good);color:#06150e}button.bad{background:var(--bad);color:#19070a}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row>*{flex:1}.chips{display:flex;gap:6px;flex-wrap:wrap}.chip{padding:8px 10px;border:1px solid var(--line);border-radius:999px;color:var(--muted);background:#0d131b}.chip.on{border-color:var(--accent);color:var(--text);background:#12253c}
+.nav{position:fixed;bottom:0;left:0;right:0;z-index:10;background:#10161eee;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding:7px 5px env(safe-area-inset-bottom)}.nav button{font-size:10px;padding:8px 2px;background:transparent;color:var(--muted)}.nav button.on{color:var(--accent)}
+.trade{padding:12px;border:1px solid var(--line);border-radius:12px;margin:8px 0;background:#10161e}.trade .title{font-weight:700}.pos{color:var(--good)}.neg{color:var(--bad)}.warn{color:var(--warn)}.thumbs{display:flex;gap:7px;overflow:auto;margin-top:8px}.thumbs img{width:76px;height:76px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+.bar{height:8px;background:#202a36;border-radius:20px;overflow:hidden}.bar i{display:block;height:100%;background:var(--accent)}
+.small{font-size:11px;color:var(--muted)}.hide{display:none!important}.section{margin-top:16px}
+</style>
+
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0b0f14">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MSL Journal">
+</head>
+<body>
+<header><h1>MSL Trading Journal <span style="color:var(--accent)">V6</span></h1><div class="sub">Mobile-first • Offline • Liquidity-focused</div></header>
+<main>
+<section id="dashboard" class="screen active">
+<h2>Dashboard</h2>
+<div class="grid" id="metrics"></div>
+<div class="card"><h3>MSL Performance</h3><div id="perf"></div></div>
+<div class="card"><h3>Recent trades</h3><div id="recent"></div></div>
+</section>
+
+<section id="log" class="screen">
+<h2>Log Trade</h2>
+<div class="card">
+<div class="chips" id="setupChips"><button class="chip on" data-v="Reversal">Reversal</button><button class="chip" data-v="Continuation">Continuation</button></div>
+<label>Date</label><input id="date" type="date">
+<div class="grid"><div><label>Pair / Instrument</label><input id="pair" placeholder="EURUSD"></div><div><label>Session</label><select id="session"><option>London</option><option>New York</option><option>Asia</option><option>Other</option></select></div></div>
+<div class="grid"><div><label>Direction</label><select id="dir"><option>Long</option><option>Short</option></select></div><div><label>Result</label><select id="result"><option>Win</option><option>Loss</option><option>BE</option><option>Open</option></select></div></div>
+<label>Primary liquidity</label><div class="chips" id="liqChips"></div>
+<label>Sweep type</label><select id="sweep"><option>Wick</option><option>Close Beyond Level</option><option>Inducement</option><option>Internal Liquidity</option><option>Other</option></select>
+<label>Structure confirmation</label><select id="structure"><option>MSS</option><option>Continuation BOS</option><option>Other</option></select>
+<label>Displacement</label><select id="disp"><option>Strong</option><option>Reasonable</option><option>Weak</option></select>
+<label>Execution</label><select id="entryModel"><option>OB</option><option>FVG</option><option>OB + FVG</option><option>Other</option></select>
+<label>Premium / Discount</label><select id="pd"><option>Discount</option><option>Premium</option><option>Equilibrium</option><option>Not Used</option></select>
+<div id="continuationOnly">
+<label>IDM / confirmation sweep</label><select id="idm"><option>Yes</option><option>No</option><option>N/A</option></select>
+</div>
+<label>Quality (1–5)</label><input id="quality" type="number" min="1" max="5" value="4">
+<div class="grid3"><div><label>Entry</label><input id="entry" type="number" step="any"></div><div><label>SL</label><input id="sl" type="number" step="any"></div><div><label>TP</label><input id="tp" type="number" step="any"></div></div>
+<label>R Multiple</label><input id="r" type="number" step="0.1" placeholder="e.g. 2.5">
+<label>Screenshot(s)</label><input id="shots" type="file" accept="image/*" multiple>
+<div class="thumbs" id="preview"></div>
+<label>Thesis</label><textarea id="thesis" placeholder="Why did you take this setup?"></textarea>
+<label>Post-trade review</label><textarea id="review" placeholder="What did price teach you?"></textarea>
+<div class="row"><button class="primary" id="save">Save trade</button><button id="clear">Clear</button></div>
+</div>
+</section>
+
+<section id="journal" class="screen">
+<h2>Journal</h2>
+<div class="card"><div class="grid"><input id="filterPair" placeholder="Search pair"><select id="filterSetup"><option value="">All setups</option><option>Reversal</option><option>Continuation</option></select></div></div>
+<div id="trades"></div>
+</section>
+
+<section id="analytics" class="screen">
+<h2>Analytics</h2>
+<div id="analyticsBody"></div>
+</section>
+
+<section id="more" class="screen">
+<h2>MSL Tools</h2>
+<div class="card"><h3>London Liquidity Map</h3><div class="sub">Mark what price is attacking before you execute.</div>
+<label>External liquidity</label><div class="chips" id="mapExternal"></div>
+<label>Internal liquidity</label><div class="chips" id="mapInternal"></div>
+<label>Market narrative</label><textarea id="narrative" placeholder="Example: price is approaching PDH while internal sell-side liquidity remains..."></textarea>
+<button class="primary" onclick="saveMap()">Save pre-session plan</button></div>
+<div class="card"><h3>Backup</h3><div class="row"><button onclick="exportJSON()">Export JSON</button><button onclick="exportCSV()">Export CSV</button></div><label>Restore JSON</label><input id="importFile" type="file" accept=".json" onchange="importJSON(event)"></div>
+<div class="card"><h3>MSL Rules</h3><p class="small">Reversal: meaningful liquidity sweep → reasonable displacement + MSS → retracement → OB/FVG execution → next meaningful liquidity.</p><p class="small">Continuation: established trend → pullback → premium/discount execution area → OB/FVG → required IDM/confirmation sweep → entry → next liquidity.</p></div>
+</section>
+</main>
+<nav class="nav">
+<button data-screen="dashboard" class="on">⌂<br>Home</button><button data-screen="log">＋<br>Log</button><button data-screen="journal">☷<br>Journal</button><button data-screen="analytics">◈<br>Stats</button><button data-screen="more">⋯<br>More</button>
+</nav>
+<script>
+const KEY='msl_journal_v6'; let db={trades:[],map:{}}; let setup='Reversal',selectedLiq='PDL'; let files=[];
+const $=id=>document.getElementById(id); const today=new Date().toISOString().slice(0,10); $('date').value=today;
+try{db=JSON.parse(localStorage.getItem(KEY)||'null')||db; if(!db.trades.length){for(const k of ['msl_journal_v5','msl_journal_v4','msl_journal_v3']){try{const x=JSON.parse(localStorage.getItem(k)||'null');if(x&&x.trades){db.trades=x.trades;break}}catch(e){}}}}catch(e){}
+function saveDB(){localStorage.setItem(KEY,JSON.stringify(db))}
+const liqs=['PDH','PDL','BSL','SSL','Swing High','Swing Low','Equal Highs','Equal Lows','Session High','Session Low','Other'];
+function chips(id,arr,sel,cb){$(id).innerHTML=arr.map(x=>`<button class="chip ${x===sel?'on':''}" data-x="${x}">${x}</button>`).join('');$(id).querySelectorAll('button').forEach(b=>b.onclick=()=>{cb(b.dataset.x);chips(id,arr,b.dataset.x,cb)})}
+chips('liqChips',liqs,selectedLiq,x=>selectedLiq=x);
+chips('mapExternal',['PDH','PDL','Weekly High','Weekly Low','BSL','SSL','Swing High','Swing Low'],null,x=>db.map.external=x);
+chips('mapInternal',['Equal Highs','Equal Lows','IDM','Internal High','Internal Low','Session High','Session Low'],null,x=>db.map.internal=x);
+$('setupChips').querySelectorAll('button').forEach(b=>b.onclick=()=>{setup=b.dataset.v;$('setupChips').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));$('continuationOnly').style.display=setup==='Continuation'?'block':'none'});
+$('shots').onchange=e=>{files=[...e.target.files];$('preview').innerHTML='';files.forEach(f=>{const u=URL.createObjectURL(f);$('preview').innerHTML+=`<img src="${u}">`})};
+function readFiles(){return Promise.all(files.map(f=>new Promise(res=>{let r=new FileReader();r.onload=()=>res(r.result);r.readAsDataURL(f)})))}
+$('save').onclick=async()=>{if(!$('pair').value.trim())return alert('Enter a pair/instrument.');const imgs=await readFiles();const t={id:Date.now(),date:$('date').value,pair:$('pair').value.trim().toUpperCase(),session:$('session').value,direction:$('dir').value,setup,liquidity:selectedLiq,sweep:$('sweep').value,structure:$('structure').value,displacement:$('disp').value,entryModel:$('entryModel').value,pd:$('pd').value,idm:setup==='Continuation'?$('idm').value:'N/A',quality:+$('quality').value||0,entry:$('entry').value,sl:$('sl').value,tp:$('tp').value,result:$('result').value,r:+$('r').value||0,thesis:$('thesis').value,review:$('review').value,images:imgs,created:new Date().toISOString()};db.trades.unshift(t);saveDB();alert(ruleFlag(t)||'Trade saved.');resetForm();renderAll()};
+function ruleFlag(t){if(t.setup==='Continuation'&&t.idm==='No')return'⚠️ Saved, but continuation IDM/confirmation is missing.';if(t.displacement==='Weak')return'⚠️ Saved, but displacement is weak.';if(t.quality<3)return'⚠️ Saved as a low-quality setup.';return''}
+function resetForm(){['pair','entry','sl','tp','r','thesis','review'].forEach(x=>$(x).value='');$('shots').value='';$('preview').innerHTML='';files=[]}
+$('clear').onclick=resetForm;
+function stats(){let ts=db.trades.filter(t=>t.result!=='Open'),wins=ts.filter(t=>t.result==='Win').length,net=ts.reduce((a,t)=>a+(+t.r||0),0),avg=ts.length?net/ts.length:0;let grossW=ts.filter(t=>t.r>0).reduce((a,t)=>a+t.r,0),grossL=Math.abs(ts.filter(t=>t.r<0).reduce((a,t)=>a+t.r,0));return{n:ts.length,w:ts.length?wins/ts.length*100:0,net,avg,pf:grossL?grossW/grossL:0}};
+function renderDash(){let s=stats();$('metrics').innerHTML=[['Trades',s.n],['Win rate',s.w.toFixed(1)+'%'],['Net R',s.net.toFixed(2)],['Avg R',s.avg.toFixed(2)],['Profit factor',s.pf.toFixed(2)],['Open',db.trades.filter(t=>t.result==='Open').length]].map(x=>`<div class="card metric"><b>${x[1]}</b><span>${x[0]}</span></div>`).join('');$('recent').innerHTML=db.trades.slice(0,5).map(tradeHTML).join('')||'<div class="small">No trades yet.</div>';let wins=db.trades.filter(t=>t.result==='Win').length;let n=db.trades.filter(t=>t.result!=='Open').length;$('perf').innerHTML=`<div class="small">${wins}/${n||0} closed trades won</div><div class="bar"><i style="width:${n?Math.min(100,wins/n*100):0}%"></i></div>`}
+function tradeHTML(t){return `<div class="trade"><div class="title">${t.pair} • ${t.direction} • ${t.setup}</div><div class="small">${t.date} • ${t.session} • ${t.liquidity} • ${t.entryModel}</div><div class="${t.r>0?'pos':t.r<0?'neg':''}">${t.result} ${t.r>0?'+':''}${(+t.r||0).toFixed(2)}R</div>${ruleFlag(t)?`<div class="warn">${ruleFlag(t)}</div>`:''}${t.images?.length?`<div class="thumbs">${t.images.map(x=>`<img src="${x}">`).join('')}</div>`:''}<div class="small">${t.review||''}</div></div>`}
+function renderJournal(){let q=$('filterPair').value.toUpperCase(),f=$('filterSetup').value;let ts=db.trades.filter(t=>(!q||t.pair.includes(q))&&(!f||t.setup===f));$('trades').innerHTML=ts.map(tradeHTML).join('')||'<div class="card">No matching trades.</div>'}
+function renderAnalytics(){let ts=db.trades.filter(t=>t.result!=='Open');const group=(key)=>{let m={};ts.forEach(t=>(m[t[key]]??=[]).push(t));return Object.entries(m).map(([k,a])=>{let r=a.reduce((x,t)=>x+(+t.r||0),0),w=a.filter(t=>t.result==='Win').length;return `<div class="trade"><b>${k}</b><div class="small">${a.length} trades • ${w/a.length*100||0}% win • ${r.toFixed(2)}R</div></div>`}).join('')};$('analyticsBody').innerHTML=`<div class="card"><h3>By setup</h3>${group('setup')||'<div class="small">No data.</div>'}</div><div class="card"><h3>By liquidity</h3>${group('liquidity')||'<div class="small">No data.</div>'}</div><div class="card"><h3>By session</h3>${group('session')||'<div class="small">No data.</div>'}</div><div class="card"><h3>By quality</h3>${group('quality')||'<div class="small">No data.</div>'}</div>`}
+function renderAll(){renderDash();renderJournal();renderAnalytics()}
+$('filterPair').oninput=renderJournal;$('filterSetup').onchange=renderJournal;
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('on'));b.classList.add('on');document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$(b.dataset.screen).classList.add('active');renderAll()});
+function saveMap(){db.map.narrative=$('narrative').value;saveDB();alert('Pre-session plan saved.')}
+function download(name,type,data){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type}));a.download=name;a.click()}
+function exportJSON(){download('msl-journal-v6.json','application/json',JSON.stringify(db))}
+function exportCSV(){let h=['date','pair','session','direction','setup','liquidity','sweep','structure','displacement','entryModel','pd','idm','quality','result','r'];let rows=[h,...db.trades.map(t=>h.map(k=>JSON.stringify(t[k]??'')))];download('msl-journal-v6.csv','text/csv',rows.map(r=>r.join(',')).join('\\n'))}
+function importJSON(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let x=JSON.parse(r.result);if(x.trades){db=x;saveDB();renderAll();alert('Backup restored.')}}catch(err){alert('Invalid backup file.')}};r.readAsText(f)}
+renderAll();
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
+  });
+}
+</script>
+</body></html>
